@@ -4,7 +4,7 @@ from tkinter import messagebox
 import random
 from tkinter import filedialog
 from decimal import Decimal
-
+import os
 FIELD_SIZE = 10 ** 3
 
 
@@ -51,6 +51,13 @@ def reconstruct_secret(shares):
     return int(round(Decimal(sums), 0))
 
 
+# ########################## ########################## ########################## #########################
+#  _____ _   _  ____ ______   ______ _____ ___ ___  _   _
+# | ____| \ | |/ ___|  _ \ \ / /  _ \_   _|_ _/ _ \| \ | |
+# |  _| |  \| | |   | |_) \ V /| |_) || |  | | | | |  \| |
+# | |___| |\  | |___|  _ < | | |  __/ | |  | | |_| | |\  |
+# |_____|_| \_|\____|_| \_\|_| |_|    |_| |___\___/|_| \_|
+# ########################## ########################## ########################## #########################
 class App1(ttk.Frame):
     """ This application Performs the encryption process on the txt file """
 
@@ -93,7 +100,7 @@ class App1(ttk.Frame):
                                      command=self.browseFiles).grid(row=5, column=0, sticky=E)
 
     def browseFiles(self):
-        filename = filedialog.askopenfilename(initialdir="/",
+        filename = filedialog.askopenfilename(initialdir=os.getcwd(),
                                               title="Select a File",
                                               filetypes=(("Text files",
                                                           "*.txt*"),
@@ -151,55 +158,97 @@ class App1(ttk.Frame):
             self.t.set("")
 
 
+# ########################## ########################## ########################## #########################
+#  ____  _____ ____ ______   ______ _____ ___ ___  _   _
+# |  _ \| ____/ ___|  _ \ \ / /  _ \_   _|_ _/ _ \| \ | |
+# | | | |  _|| |   | |_) \ V /| |_) || |  | | | | |  \| |
+# | |_| | |__| |___|  _ < | | |  __/ | |  | | |_| | |\  |
+# |____/|_____\____|_| \_\|_| |_|    |_| |___\___/|_| \_|
+# ########################## ########################## ########################## #########################
+
 class App2(ttk.Frame):
     """ Application to Perform decryption """
 
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master)
         self.grid()
-        self.create_widgets()
+        self.createWidgets()
 
-    def create_widgets(self):
-        """Create the widgets for the GUI"""
-        # 1 textbox (stringvar)
-        self.entry = StringVar()
-        self.textBox1 = ttk.Entry(
-            self, textvariable=self.entry).grid(row=0, column=1)
+    def createWidgets(self):
+        # text variables
 
-        # 5 labels (3 static, 1 stringvar)
-        self.displayLabel1 = ttk.Label(
-            self, text="feet").grid(row=0, column=2, sticky=W)
-        self.displayLabel2 = ttk.Label(
-            self, text="is equivalent to:").grid(row=1, column=0)
-        self.result = StringVar()
-        self.displayLabel3 = ttk.Label(
-            self, textvariable=self.result).grid(row=1, column=1)
-        self.displayLabel4 = ttk.Label(
-            self, text="meters").grid(row=1, column=2, sticky=W)
+        self.n = StringVar()
+        self.t = StringVar()
+        self.inp = StringVar()
 
-        # 2 buttons
-        self.calculateButton = ttk.Button(
-            self, text="Calculate", command=self.decrypt).grid(row=2, column=2, sticky=(S, E))
-        self.quitButton = ttk.Button(self, text="Quit", command=self.destroy).grid(
-            row=2, column=1, sticky=(S, E))
+        self.variable = StringVar()
+        # labels
+        self.label1 = ttk.Label(self, text="Enter the total number of shares you posess :").grid(
+            row=0, column=0, sticky=W)
+        self.label2 = ttk.Label(self, text="Enter the threshold number of shares required to reconstruct the key :").grid(
+            row=1, column=0, sticky=W)
+        self.label3 = ttk.Label(self, text="Your keys are:").grid(
+            row=2, column=0, sticky=W)
+        self.label4 = ttk.Label(self, text="Selected file is:")
+        self.label4.grid(
+            row=4, column=0, sticky=W)
+        # text boxes
+        # self.textbox1 = ttk.Entry(self, textvariable=self.n).grid(
+        #     row=0, column=1, sticky=E)
+        self.textbox2 = ttk.Entry(self, textvariable=self.t).grid(
+            row=1, column=1, sticky=E)
 
-    def decrypt():
+        self.textbox4 = Text(self, width=40, height=20)
+        self.textbox4.grid(
+            row=3, column=1, sticky=E,  ipady=0)
+        OPTIONS = [
+            i for i in range(1, 101)
+        ]
+
+        self.variable.set(OPTIONS[0])
+        self.w = OptionMenu(self, self.variable, *OPTIONS)
+        self.w.grid(row=0, column=1, sticky=E)
+        # buttons
+        self.button1 = ttk.Button(self, text="Ok", command=self.decrypt).grid(
+            row=5, column=1, sticky=E)
+        self.button_explore = Button(self,
+                                     text="Browse",
+                                     command=self.browseFiles).grid(row=5, column=0, sticky=E)
+        self.button3 = Button(self, text="checkbutton", command=self.ok)
+        self.button3.grid(row=6, column=1)
+
+    def browseFiles(self):
+        filename = filedialog.askopenfilename(initialdir=os.getcwd(),
+                                              title="Select a File",
+                                              filetypes=(("Text files",
+                                                          "*.txt*"),
+                                                         ("all files",
+                                                          "*.*")))
+        self.inp.set(filename)
+        self.label4.configure(text="File Opened: "+filename)
+
+    def ok(self):
+        print("value is:" + self.variable.get())
+
+    def decrypt(self):
         p = 17
         q = 19
         n = p * q
 
-        t = int(input('Enter the number of shares you have :'))
-        print()
+        # t = int(input('Enter the number of shares you have :'))
+        t = int(self.variable.get())
+        # print(t)
         shares = []
-        for i in range(t):
-            ind = int(input("Enter the index number of the share : "))
-            val = int(input("Enter the value of the share : "))
-            print()
-            shares.append((ind, val))
-        # print(reconstruct_secret(shares))
+        st = self.textbox4.get(1.0, END)
+        shares = st.split('\n')[:-2]
+        # for i in range(t):
+        #     ind = int(input("Enter the index number of the share : "))
+        #     val = int(input("Enter the value of the share : "))
+        #     print()
+        #     shares.append((ind, val))
         d = reconstruct_secret(shares)
 
-        with open("Downloads/encrypted.txt", "r", encoding='utf8') as fin:
+        with open("encrypted.txt", "r", encoding='utf8') as fin:
             encmsg = fin.read()
         print(f"\nThe encrypted message is :\n{encmsg}")
         enc = [ord(i) for i in encmsg]
@@ -212,13 +261,31 @@ class App2(ttk.Frame):
         print()
 
 
-# Setup Tk()
 window = Tk()
-window.geometry("700x550")
+w = 770  # width for the Tk root
+h = 450  # height for the Tk root
+
+# get screen width and height
+ws = window.winfo_screenwidth()  # width of the screen
+hs = window.winfo_screenheight()  # height of the screen
+
+# calculate x and y coordinates for the Tk window window
+x = (ws/2) - (w/2)
+y = (hs/2) - (h/2)
+
+# set the dimensions of the screen
+# and where it is placed
+window.geometry('%dx%d+%d+%d' % (w, h, x, y))
+
+# window.mainloop()  # starts the mainloop
+# window.geometry(f"{x}x{y}")
+
 # Setup the notebook (tabs)
 notebook = ttk.Notebook(window)
-frame1 = ttk.Frame(notebook)
-frame2 = ttk.Frame(notebook)
+
+frame1 = ttk.Frame(notebook, width=w, height=h)
+
+frame2 = ttk.Frame(notebook, width=w, height=h)
 notebook.add(frame1, text="Encrypt")
 notebook.add(frame2, text="Decrypt")
 notebook.grid()
