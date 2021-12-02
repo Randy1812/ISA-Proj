@@ -15,7 +15,10 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 import random
 from decimal import Decimal
+
 FIELD_SIZE = 10 ** 3
+
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 
 def drive_init():
@@ -34,7 +37,7 @@ def drive_init():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                'secretdesk.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
@@ -146,7 +149,6 @@ class App1(ttk.Frame):
         self.createWidgets()
         self.service = drive_init()
 
-
     def createWidgets(self):
         # text variables
 
@@ -157,7 +159,8 @@ class App1(ttk.Frame):
         # labels
         self.label1 = ttk.Label(self, text="Enter the total number of shares you wish to make :").grid(
             row=0, column=0, sticky=W)
-        self.label2 = ttk.Label(self, text="Enter the threshold number of shares required to reconstruct the key :").grid(
+        self.label2 = ttk.Label(self,
+                                text="Enter the threshold number of shares required to reconstruct the key :").grid(
             row=1, column=0, sticky=W)
         self.label3 = ttk.Label(self, text="Your keys are:").grid(
             row=2, column=0, sticky=W)
@@ -172,7 +175,7 @@ class App1(ttk.Frame):
 
         self.textbox4 = Text(self, width=40, height=20)
         self.textbox4.grid(
-            row=3, column=1, sticky=E,  ipady=0)
+            row=3, column=1, sticky=E, ipady=0)
         # buttons
         self.button1 = ttk.Button(self, text="Ok", command=self.encrypt).grid(
             row=5, column=1, sticky=E)
@@ -189,7 +192,7 @@ class App1(ttk.Frame):
                                                           "*.*")))
         self.inp.set(filename)
         # Change label contents
-        self.label4.configure(text="File Opened: "+filename)
+        self.label4.configure(text="File Opened: " + filename)
 
     def encrypt(self):
         p = 17
@@ -216,7 +219,7 @@ class App1(ttk.Frame):
             shares = create_shares(numOfShares, threshold, d)
             txt = ''
             for i in shares:
-                txt = txt+str(i)+'\n'
+                txt = txt + str(i) + '\n'
 
             self.textbox4.insert(
                 END, "The shares are as follows \nPlease store them securely.\n")
@@ -232,6 +235,7 @@ class App1(ttk.Frame):
                 for i in enc:
                     fout.write(chr(i))
                     print(chr(i), end="")
+            upload_file(self.service)
         except ValueError:
             messagebox.showinfo("Error", "You can only use numbers.")
         finally:
@@ -254,6 +258,7 @@ class App2(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.grid()
         self.createWidgets()
+        self.service = drive_init()
 
     def createWidgets(self):
         # text variables
@@ -274,21 +279,20 @@ class App2(ttk.Frame):
         self.label4.grid(
             row=4, column=0, sticky=W)
         # text boxes
-        # self.textbox1 = ttk.Entry(self, textvariable=self.n).grid(
-        #     row=0, column=1, sticky=E)
+        self.textbox1 = ttk.Entry(self, textvariable=self.n).grid(row=0, column=1, sticky=E)
         # self.textbox2 = ttk.Entry(self, textvariable=self.t).grid(
         #     row=1, column=1, sticky=E)
 
         self.textbox4 = Text(self, width=40, height=20)
         self.textbox4.grid(
-            row=3, column=1, sticky=E,  ipady=0)
+            row=3, column=1, sticky=E, ipady=0)
         OPTIONS = [
             i for i in range(1, 101)
         ]
 
-        self.variable.set(OPTIONS[0])
-        self.w = OptionMenu(self, self.variable, *OPTIONS)
-        self.w.grid(row=0, column=1, sticky=E)
+        # self.variable.set(OPTIONS[0])
+        # self.w = OptionMenu(self, self.variable, *OPTIONS)
+        # self.w.grid(row=0, column=1, sticky=E)
         # buttons
         self.button1 = ttk.Button(self, text="Ok", command=self.decrypt).grid(
             row=5, column=1, sticky=E)
@@ -306,7 +310,7 @@ class App2(ttk.Frame):
                                                          ("all files",
                                                           "*.*")))
         self.inp.set(filename)
-        self.label4.configure(text="File Opened: "+filename)
+        self.label4.configure(text="File Opened: " + filename)
 
     def ok(self):
         print("value is:" + self.variable.get())
@@ -357,8 +361,8 @@ ws = window.winfo_screenwidth()  # width of the screen
 hs = window.winfo_screenheight()  # height of the screen
 
 # calculate x and y coordinates for the Tk window window
-x = (ws/2) - (w/2)
-y = (hs/2) - (h/2)
+x = (ws / 2) - (w / 2)
+y = (hs / 2) - (h / 2)
 
 # set the dimensions of the screen
 # and where it is placed
