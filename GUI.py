@@ -5,7 +5,86 @@ import random
 from tkinter import filedialog
 from decimal import Decimal
 import os
+# from __future__ import print_function
+import os.path
+import io
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+import random
+from decimal import Decimal
 FIELD_SIZE = 10 ** 3
+
+
+def drive_init():
+    """Shows basic usage of the Drive v3 API.
+    Prints the names and ids of the first 10 files the user has access to.
+    """
+    creds = None
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+
+    service = build('drive', 'v3', credentials=creds)
+    return service
+
+
+def search_file(service):
+    results = service.files().list(pageSize=10, fields="nextPageToken, files(id, name)",
+                                   q="name='encrypted.txt'").execute()
+    items = results.get('files', [])
+    op = ""
+
+    if not items:
+        print('No files found.')
+    else:
+        print('The File has been found.')
+        for item in items:
+            # print(u'{0} ({1})'.format(item['name'], item['id']))
+            print(f"File Name : {item['name']} File ID : {item['id']}")
+            op = item['id']
+    return op
+
+
+def upload_file(service):
+    # Uploading a File
+    file_metadata = {'name': "encrypted.txt"}
+    filePath = "encrypted.txt"
+    media = MediaFileUpload(filePath, mimetype="text/plain")
+    file = service.files().create(body=file_metadata,
+                                  media_body=media, fields='id').execute()
+    fileID = file.get('id')
+    print('File ID: ' + fileID)
+
+
+def download_file(service, fileid):
+    # Downloading A File
+    print(f"The file is being downloaded. It will be stored in the downloads folder.")
+    request = service.files().get_media(fileId=fileid)
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while done is False:
+        status, done = downloader.next_chunk()
+        print("Download %d%%." % int(status.progress() * 100))
+    with io.open("Downloads/encrypted.txt", "wb") as f:
+        fh.seek(0)
+        f.write(fh.read())
 
 
 def gcd(a, b):
@@ -65,6 +144,8 @@ class App1(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.grid()
         self.createWidgets()
+        self.service = drive_init()
+
 
     def createWidgets(self):
         # text variables
@@ -141,7 +222,7 @@ class App1(ttk.Frame):
                 END, "The shares are as follows \nPlease store them securely.\n")
             self.textbox4.insert(END, txt)
 
-            with open(str(self.inp), "r", encoding='utf8') as fin:
+            with open(str(self.inp.get()), "r", encoding='utf8') as fin:
                 message = fin.read()
             print(f"The message in the file is :\n{message}")
             msg = [ord(i) for i in message]
@@ -185,8 +266,8 @@ class App2(ttk.Frame):
         # labels
         self.label1 = ttk.Label(self, text="Enter the total number of shares you posess :").grid(
             row=0, column=0, sticky=W)
-        self.label2 = ttk.Label(self, text="Enter the threshold number of shares required to reconstruct the key :").grid(
-            row=1, column=0, sticky=W)
+        # self.label2 = ttk.Label(self, text="Enter the threshold number of shares required to reconstruct the key :").grid(
+        #     row=1, column=0, sticky=W)
         self.label3 = ttk.Label(self, text="Your keys are:").grid(
             row=2, column=0, sticky=W)
         self.label4 = ttk.Label(self, text="Selected file is:")
@@ -195,8 +276,8 @@ class App2(ttk.Frame):
         # text boxes
         # self.textbox1 = ttk.Entry(self, textvariable=self.n).grid(
         #     row=0, column=1, sticky=E)
-        self.textbox2 = ttk.Entry(self, textvariable=self.t).grid(
-            row=1, column=1, sticky=E)
+        # self.textbox2 = ttk.Entry(self, textvariable=self.t).grid(
+        #     row=1, column=1, sticky=E)
 
         self.textbox4 = Text(self, width=40, height=20)
         self.textbox4.grid(
@@ -213,7 +294,7 @@ class App2(ttk.Frame):
             row=5, column=1, sticky=E)
         self.button_explore = Button(self,
                                      text="Browse",
-                                     command=self.browseFiles).grid(row=5, column=0, sticky=E)
+                                     command=self.browseFiles).grid(row=4, column=0, sticky=E)
         self.button3 = Button(self, text="checkbutton", command=self.ok)
         self.button3.grid(row=6, column=1)
 
@@ -241,6 +322,12 @@ class App2(ttk.Frame):
         shares = []
         st = self.textbox4.get(1.0, END)
         shares = st.split('\n')[:-2]
+        print(shares)
+        for i in range(len(shares)):
+            shares[i] = shares[i][1:-1]
+            shares[i] = tuple(map(int, shares[i].split(',')))
+        print(shares)
+
         # for i in range(t):
         #     ind = int(input("Enter the index number of the share : "))
         #     val = int(input("Enter the value of the share : "))
