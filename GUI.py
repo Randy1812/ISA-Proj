@@ -269,17 +269,19 @@ class App2(ttk.Frame):
 
         self.variable = StringVar()
         # labels
-        self.label1 = ttk.Label(self, text="Enter the total number of shares you posess :").grid(
-            row=0, column=0, sticky=W)
+        # self.label1 = ttk.Label(self, text="Enter the total number of shares you posess :").grid(
+        #     row=0, column=0, sticky=W)
         # self.label2 = ttk.Label(self, text="Enter the threshold number of shares required to reconstruct the key :").grid(
         #     row=1, column=0, sticky=W)
         self.label3 = ttk.Label(self, text="Your keys are:").grid(
             row=2, column=0, sticky=W)
-        self.label4 = ttk.Label(self, text="Selected file is:")
-        self.label4.grid(
-            row=4, column=0, sticky=W)
+        # self.label4 = ttk.Label(self, text="Selected file is:")
+        # self.label4.grid(
+        #     row=4, column=0, sticky=W)
+
         # text boxes
-        self.textbox1 = ttk.Entry(self, textvariable=self.n).grid(row=0, column=1, sticky=E)
+        # self.textbox1 = ttk.Entry(self, textvariable=self.n).grid(
+        #     row=0, column=1, sticky=E)
         # self.textbox2 = ttk.Entry(self, textvariable=self.t).grid(
         #     row=1, column=1, sticky=E)
 
@@ -296,11 +298,11 @@ class App2(ttk.Frame):
         # buttons
         self.button1 = ttk.Button(self, text="Ok", command=self.decrypt).grid(
             row=5, column=1, sticky=E)
-        self.button_explore = Button(self,
-                                     text="Browse",
-                                     command=self.browseFiles).grid(row=4, column=0, sticky=E)
-        self.button3 = Button(self, text="checkbutton", command=self.ok)
-        self.button3.grid(row=6, column=1)
+        # self.button_explore = Button(self,
+        #                              text="Browse",
+        #                              command=self.browseFiles).grid(row=4, column=0, sticky=E)
+        # self.button3 = Button(self, text="checkbutton", command=self.ok)
+        # self.button3.grid(row=6, column=1)
 
     def browseFiles(self):
         filename = filedialog.askopenfilename(initialdir=os.getcwd(),
@@ -312,9 +314,6 @@ class App2(ttk.Frame):
         self.inp.set(filename)
         self.label4.configure(text="File Opened: " + filename)
 
-    def ok(self):
-        print("value is:" + self.variable.get())
-
     def decrypt(self):
         id = search_file(self.service)
         download_file(self.service, id)
@@ -323,7 +322,7 @@ class App2(ttk.Frame):
         n = p * q
 
         # t = int(input('Enter the number of shares you have :'))
-        t = int(self.variable.get())
+        # t = int(self.variable.get())
         # print(t)
         shares = []
         st = self.textbox4.get(1.0, END)
