@@ -316,6 +316,8 @@ class App2(ttk.Frame):
         print("value is:" + self.variable.get())
 
     def decrypt(self):
+        id = search_file(self.service)
+        download_file(self.service, id)
         p = 17
         q = 19
         n = p * q
