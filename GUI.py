@@ -195,10 +195,12 @@ class App1(ttk.Frame):
         self.label4.configure(text="File Opened: " + filename)
 
     def encrypt(self):
-        p = 17
-        q = 19
-        n = p * q
-        totient = (p - 1) * (q - 1)
+        p = 13
+        q = 31
+        r = 157
+        s = 173
+        n = p * q * r
+        totient = (p - 1) * (q - 1) * (r - 1)*(s-1)
         e = d = -1
         ct = 0
         for i in range(2, totient):
@@ -317,9 +319,12 @@ class App2(ttk.Frame):
     def decrypt(self):
         id = search_file(self.service)
         download_file(self.service, id)
-        p = 17
-        q = 19
-        n = p * q
+        p = 13
+        q = 31
+        r = 157
+        s = 173
+        n = p * q * r
+        totient = (p - 1) * (q - 1) * (r - 1)*(s-1)
 
         # t = int(input('Enter the number of shares you have :'))
         # t = int(self.variable.get())
